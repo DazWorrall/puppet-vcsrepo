@@ -20,7 +20,18 @@ Puppet::Type.type(:vcsrepo).provide(:svn, :parent => Puppet::Provider::Vcsrepo) 
   end
 
   def exists?
-    File.directory?(File.join(@resource.value(:path), '.svn'))
+    working_copy_exists?
+  end
+
+  def default_svn_args
+    args = ['--non-interactive', '--trust-server-cert']
+    if @resource.value(:username)
+      args.push('--username', @resource.value(:username))
+    end
+    if @resource.value(:password)
+      args.push('--password', @resource.value(:password))
+    end
+    args    
   end
 
   def destroy
@@ -39,19 +50,25 @@ Puppet::Type.type(:vcsrepo).provide(:svn, :parent => Puppet::Provider::Vcsrepo) 
 
   def latest
     at_path do
-      svn('info', '-r', 'HEAD')[/^Revision:\s+(\d+)/m, 1]
+      args = default_svn_args
+      args.push('info', '-r', 'HEAD')
+      svn(*args)[/^Revision:\s+(\d+)/m, 1]
     end
   end
   
   def revision
     at_path do
-      svn('info')[/^Revision:\s+(\d+)/m, 1]
+      args = default_svn_args
+      args << 'info'
+      svn(*args)[/^Revision:\s+(\d+)/m, 1]
     end
   end
 
   def revision=(desired)
     at_path do
-      svn('update', '-r', desired)
+      args = default_svn_args
+      args.push('update', '-r', desired)
+      svn(*args)
     end
   end
 
@@ -62,15 +79,10 @@ Puppet::Type.type(:vcsrepo).provide(:svn, :parent => Puppet::Provider::Vcsrepo) 
   private
 
   def checkout_repository(source, path, revision = nil)
-    args = ['checkout', '--non-interactive', '--trust-server-cert']
+    args = default_svn_args
+    args << 'checkout'
     if revision
       args.push('-r', revision)
-    end
-    if @resource.value(:username)
-      args.push('--username', @resource.value(:username))
-    end
-    if @resource.value(:password)
-      args.push('--password', @resource.value(:password))
     end
     args.push(source, path)
     svn(*args)
