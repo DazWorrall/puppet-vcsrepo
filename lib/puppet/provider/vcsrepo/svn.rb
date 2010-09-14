@@ -62,7 +62,7 @@ Puppet::Type.type(:vcsrepo).provide(:svn, :parent => Puppet::Provider::Vcsrepo) 
   private
 
   def checkout_repository(source, path, revision = nil)
-    args = ['checkout', '--non-interactive']
+    args = ['checkout', '--non-interactive', '--trust-server-cert']
     if revision
       args.push('-r', revision)
     end
