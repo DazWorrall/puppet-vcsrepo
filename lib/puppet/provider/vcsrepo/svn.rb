@@ -7,7 +7,7 @@ Puppet::Type.type(:vcsrepo).provide(:svn, :parent => Puppet::Provider::Vcsrepo) 
            :svnadmin => 'svnadmin'
 
   defaultfor :svn => :exists
-  has_features :filesystem_types, :reference_tracking
+  has_features :filesystem_types, :reference_tracking, :repo_auth
 
   def create
     if !@resource.value(:source)
@@ -55,12 +55,22 @@ Puppet::Type.type(:vcsrepo).provide(:svn, :parent => Puppet::Provider::Vcsrepo) 
     end
   end
 
+  def working_copy_exists?
+    File.directory?(File.join(@resource.value(:path), '.svn'))
+  end
+
   private
 
   def checkout_repository(source, path, revision = nil)
     args = ['checkout']
     if revision
       args.push('-r', revision)
+    end
+    if @resource.value(:username)
+      args.push('--username', @resource.value(:username))
+    end
+    if @resource.value(:password)
+      args.push('--password', @resource.value(:password))
     end
     args.push(source, path)
     svn(*args)

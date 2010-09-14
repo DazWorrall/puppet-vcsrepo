@@ -17,6 +17,9 @@ Puppet::Type.newtype(:vcsrepo) do
   feature :reference_tracking,
           "The provider supports tracking revision references that can change
            over time (eg, some VCS tags and branch names)"
+
+  feature :repo_auth,
+          "The provider supports authenticating against a repository source"
   
   ensurable do
     attr_accessor :latest
@@ -97,6 +100,14 @@ Puppet::Type.newtype(:vcsrepo) do
 
   newparam(:source) do
     desc "The source URI for the repository"
+  end
+
+  newparam :username, :required_features => [:repo_auth] do
+    desc "The username (if any) to access the repository"
+  end
+
+  newparam :password, :required_features => [:repo_auth] do
+    desc "The password to use with the given username"
   end
 
   newparam(:fstype, :required_features => [:filesystem_types]) do
