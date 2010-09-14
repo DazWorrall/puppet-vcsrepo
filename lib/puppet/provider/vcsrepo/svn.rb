@@ -36,6 +36,7 @@ Puppet::Type.type(:vcsrepo).provide(:svn, :parent => Puppet::Provider::Vcsrepo) 
       args.push('--password', @resource.value(:password))
     end
     args    
+  end
   
   def destroy
     FileUtils.rm_rf(@resource.value(:path))
