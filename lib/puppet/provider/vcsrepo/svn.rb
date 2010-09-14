@@ -55,6 +55,10 @@ Puppet::Type.type(:vcsrepo).provide(:svn, :parent => Puppet::Provider::Vcsrepo) 
     end
   end
 
+  def working_copy_exists?
+    File.directory?(File.join(@resource.value(:path), '.svn'))
+  end
+
   private
 
   def checkout_repository(source, path, revision = nil)
